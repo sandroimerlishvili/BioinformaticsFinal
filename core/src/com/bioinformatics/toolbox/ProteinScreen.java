@@ -192,7 +192,7 @@ public class ProteinScreen extends ScreenAdapter {
 
         createTable();
 
-        addLabel("Pick a reading frame:", 0, 0);
+        addLabel("Pick a reading frame:", 0, 25);
 
         addFrameTextButton("Frame 1", "laser").addListener(new ClickListener() {
             @Override
@@ -254,7 +254,7 @@ public class ProteinScreen extends ScreenAdapter {
 
         mainTable.setPosition(0, 0);
 
-        mainTable.setDebug(true);
+        //mainTable.setDebug(true);
 
     }
 
