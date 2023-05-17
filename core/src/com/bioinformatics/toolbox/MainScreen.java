@@ -120,7 +120,7 @@ public class MainScreen extends ScreenAdapter {
 
             String text = textField.getText();
 
-            text = text.replaceAll("[^atgc]", "");
+            text = text.replaceAll("[^atgcATGC]", "").toUpperCase();
 
             textField.setText(text);
             textField.setCursorPosition(textField.getText().length());
@@ -178,11 +178,12 @@ public class MainScreen extends ScreenAdapter {
 
         textField = addTextField("");
 
-        addTextButton("Submit").addListener(new ClickListener() {
+        addTextButton("Submit", "default").addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y)
             {
 
+                textField.setText(textField.getText().toUpperCase());
                 if (textField.getText().length() >= 15) {
 
                     parent.clickSound.play(1f);
@@ -198,7 +199,7 @@ public class MainScreen extends ScreenAdapter {
             }
         });
 
-        addTextButton("Exit").addListener(new ClickListener() {
+        addTextButton("Exit", "radiation").addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y)
             {
@@ -235,9 +236,9 @@ public class MainScreen extends ScreenAdapter {
 
     }
 
-    private ImageTextButton addTextButton(String name) {
+    private ImageTextButton addTextButton(String name, String styleName) {
 
-        ImageTextButton button = new ImageTextButton(name, skin, "default");
+        ImageTextButton button = new ImageTextButton(name, skin, styleName);
 
         button.setColor(77f / 255f, 210f / 255f, 219f / 255f, 255f / 255f);
 

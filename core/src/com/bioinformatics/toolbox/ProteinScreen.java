@@ -1,18 +1,16 @@
 package com.bioinformatics.toolbox;
 
+import java.util.ArrayList;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -21,7 +19,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import jdk.tools.jmod.Main;
 
 public class ProteinScreen extends ScreenAdapter {
 
@@ -34,6 +31,7 @@ public class ProteinScreen extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private Table mainTable;
+    private Label proteinLabel;
 
     //graphics
 
@@ -60,9 +58,12 @@ public class ProteinScreen extends ScreenAdapter {
     private FreeTypeFontGenerator fontGenerator;
     private FreeTypeFontGenerator.FreeTypeFontParameter fontParameter;
 
-    // binary values
+    // sequence values
 
     String dnaSequence;
+    String proteinSequence = "";
+    int readingFrame = 1;
+    boolean readingFrameChanged = false;
     String[][] codonChart = { { "aug", "M" },
             { "uuu", "uuc", "F" },
             { "uua", "uug", "cuu", "cuc", "cua", "cug", "L" },
@@ -83,7 +84,7 @@ public class ProteinScreen extends ScreenAdapter {
             { "ugg", "W" },
             { "cgu", "cgc", "cga", "cgg", "aga", "agg", "R" },
             { "ggu", "ggc", "gga", "ggg", "G" },
-            { "uaa", "uag", "uga", "STOP" } };
+            { "uaa", "uag", "uga", "*" } };
 
     public ProteinScreen(MainClass parentClass, String dnaSequence) {
 
@@ -145,6 +146,14 @@ public class ProteinScreen extends ScreenAdapter {
         stage.act();
         stage.draw();
 
+        if (readingFrameChanged) {
+
+            proteinLabel.setText(convertToProtein(dnaSequence, readingFrame));
+
+        }
+
+        readingFrameChanged = false;
+
         batch.end();
 
     }
@@ -183,9 +192,42 @@ public class ProteinScreen extends ScreenAdapter {
 
         createTable();
 
-        addLabel("Pick a reading frame");
+        addLabel("Pick a reading frame:", 0, 0);
 
-        addMainTextButton("Try Another Sequence").addListener(new ClickListener() {
+        addFrameTextButton("Frame 1", "laser").addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y)
+            {
+                parent.clickSound.play(0.7f);
+                readingFrame = 1;
+                readingFrameChanged = true;
+            }
+        });
+
+        addFrameTextButton("Frame 2", "laser").addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y)
+            {
+                parent.clickSound.play(0.7f);
+                readingFrame = 2;
+                readingFrameChanged = true;
+            }
+        });
+
+        addFrameTextButton("Frame 3", "laser").addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y)
+            {
+                parent.clickSound.play(0.7f);
+                readingFrame = 3;
+                readingFrameChanged = true;
+            }
+        });
+
+        proteinLabel = addLabel(convertToProtein(dnaSequence, readingFrame), 100, 0);
+        proteinLabel.setWrap(true);
+
+        addMainTextButton("Try Another Sequence", "warning", 100, 25).addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y)
             {
@@ -212,30 +254,90 @@ public class ProteinScreen extends ScreenAdapter {
 
         mainTable.setPosition(0, 0);
 
+        mainTable.setDebug(true);
+
     }
 
-    private Label addLabel(String name) {
+    private Label addLabel(String name, int padTop, int padBottom) {
 
         Label label = new Label(name, skin);
         label.setColor(77f / 255f, 210f / 255f, 219f / 255f, 255f / 255f);
 
         label.setAlignment(Align.center);
 
-        mainTable.add(label).width(1000).height(100).padBottom(10);
+        mainTable.add(label).width(1000).height(50).padTop(padTop).padBottom(padBottom);
         mainTable.row();
+
         return label;
 
     }
 
-    private ImageTextButton addMainTextButton(String name) {
+    private ImageTextButton addMainTextButton(String name, String styleName, int padTop, int padBottom) {
 
-        ImageTextButton button = new ImageTextButton(name, skin, "warning");
+        ImageTextButton button = new ImageTextButton(name, skin, styleName);
 
         button.setColor(77f / 255f, 210f / 255f, 219f / 255f, 100);
 
-        mainTable.add(button).width(1000).height(100).padBottom(25);
+        mainTable.add(button).width(1000).height(100).padTop(padTop).padBottom(padBottom);
         mainTable.row();
         return button;
+
+    }
+
+    private ImageTextButton addFrameTextButton(String name, String styleName) {
+
+        ImageTextButton button = new ImageTextButton(name, skin, styleName);
+
+        button.setColor(77f / 255f, 210f / 255f, 219f / 255f, 100);
+
+
+        mainTable.add(button).width(175).height(50);
+        mainTable.row();
+        return button;
+
+    }
+
+    private String convertToProtein(String dnaSequence, int readingFrame) {
+
+        System.out.println("DNA: " + dnaSequence);
+
+        dnaSequence = dnaSequence.replace("t", "u");
+
+        System.out.println("\nRNA: " + dnaSequence);
+
+        ArrayList<String> codons = new ArrayList<String>();
+
+        for (int i = readingFrame - 1; i < dnaSequence.length() - 2; i += 3) {
+
+            codons.add(dnaSequence.substring(i, i + 3));
+
+        }
+
+        System.out.println("\n" + codons);
+
+        for (int i = 0; i < codons.size(); i++) {
+
+            for (int j = 0; j < codonChart.length; j++) {
+
+                for (int k = 0; k < codonChart[j].length - 1; k++) {
+
+                    if (codons.get(i).equals(codonChart[j][k])) {
+
+                        codons.set(i, codonChart[j][codonChart[j].length - 1]);
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        proteinSequence = codons.toString().replaceAll("[,\\[\\]]", "").replace(" ", "");
+
+        System.out.println("\nProtein: " + proteinSequence);
+
+        return proteinSequence;
 
     }
 
