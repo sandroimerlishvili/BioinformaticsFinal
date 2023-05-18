@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -52,11 +51,6 @@ public class ProteinScreen extends ScreenAdapter {
     // HUD
 
     BitmapFont font1;
-
-    // font Generators
-
-    private FreeTypeFontGenerator fontGenerator;
-    private FreeTypeFontGenerator.FreeTypeFontParameter fontParameter;
 
     // sequence values
 
@@ -125,10 +119,10 @@ public class ProteinScreen extends ScreenAdapter {
 
         // create bitmap fonts from file
 
-        fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("font/EdgeFont.otf"));
-        fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        font1 = new BitmapFont(Gdx.files.internal("fonts/font1.fnt"));
 
-        font1 = fontGenerator.generateFont(fontParameter);
+        font1.getData().scale(0.1f);
+        font1.getData().markupEnabled = true;
 
     }
 
@@ -224,8 +218,10 @@ public class ProteinScreen extends ScreenAdapter {
             }
         });
 
-        proteinLabel = addLabel(convertToProtein(dnaSequence, readingFrame), 100, 0);
+        proteinLabel = addProteinLabel(convertToProtein(dnaSequence, readingFrame), 125, 0);
         proteinLabel.setWrap(true);
+
+        proteinLabel.setFontScale(0.5f);
 
         addMainTextButton("Try Another Sequence", "warning", 100, 25).addListener(new ClickListener() {
             @Override
@@ -261,7 +257,7 @@ public class ProteinScreen extends ScreenAdapter {
     private Label addLabel(String name, int padTop, int padBottom) {
 
         Label label = new Label(name, skin);
-        label.setColor(77f / 255f, 210f / 255f, 219f / 255f, 255f / 255f);
+        label.setColor(38f / 255f, 180f / 255f, 181f / 255f, 255f / 255f);
 
         label.setAlignment(Align.center);
 
@@ -272,13 +268,31 @@ public class ProteinScreen extends ScreenAdapter {
 
     }
 
+    private Label addProteinLabel(String name, int padTop, int padBottom) {
+
+        Label.LabelStyle labelStyle = new Label.LabelStyle();
+
+        labelStyle.font = font1;
+
+        Label label = new Label(name, labelStyle);
+        label.setColor(255f / 255f, 255f / 255f, 255f / 255f, 255f / 255f);
+
+        label.setAlignment(Align.center);
+
+        mainTable.add(label).width(1200).height(100).padTop(padTop).padBottom(padBottom);
+        mainTable.row();
+
+        return label;
+
+    }
+
     private ImageTextButton addMainTextButton(String name, String styleName, int padTop, int padBottom) {
 
         ImageTextButton button = new ImageTextButton(name, skin, styleName);
 
-        button.setColor(77f / 255f, 210f / 255f, 219f / 255f, 100);
+        button.setColor(255f / 255f, 255f / 255f, 255f / 255f, 100);
 
-        mainTable.add(button).width(1000).height(100).padTop(padTop).padBottom(padBottom);
+        mainTable.add(button).width(1200).height(100).padTop(padTop).padBottom(padBottom);
         mainTable.row();
         return button;
 
@@ -323,7 +337,19 @@ public class ProteinScreen extends ScreenAdapter {
 
                     if (codons.get(i).equals(codonChart[j][k])) {
 
-                        codons.set(i, codonChart[j][codonChart[j].length - 1]);
+                        if (codonChart[j][codonChart[j].length - 1].equals("M")) {
+
+                            codons.set(i, "[GREEN]M[]");
+
+                        } else if (codonChart[j][codonChart[j].length - 1].equals("*")) {
+
+                            codons.set(i, "[#FF1500]*[]");
+
+                        } else {
+
+                            codons.set(i, codonChart[j][codonChart[j].length - 1]);
+
+                        }
 
                     }
 
@@ -333,7 +359,11 @@ public class ProteinScreen extends ScreenAdapter {
 
         }
 
-        proteinSequence = codons.toString().replaceAll("[,\\[\\]]", "").replace(" ", "");
+        System.out.println(codons.toString());
+
+        proteinSequence = codons.toString().replaceAll("[,]", "").replace(" ", "");
+
+        proteinSequence = proteinSequence.substring(1, proteinSequence.length() - 1);
 
         System.out.println("\nProtein: " + proteinSequence);
 
@@ -365,11 +395,6 @@ public class ProteinScreen extends ScreenAdapter {
         // HUD
 
         font1.dispose();
-
-        // font Generators
-
-        fontGenerator.dispose();
-        fontParameter = null;
 
 
     }

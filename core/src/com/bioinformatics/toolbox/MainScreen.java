@@ -11,9 +11,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -56,11 +53,6 @@ public class MainScreen extends ScreenAdapter {
 
     BitmapFont font1;
 
-    // font Generators
-
-    private FreeTypeFontGenerator fontGenerator;
-    private FreeTypeFontGenerator.FreeTypeFontParameter fontParameter;
-
     // audio
 
     public MainScreen(MainClass parentClass) {
@@ -100,10 +92,7 @@ public class MainScreen extends ScreenAdapter {
 
         // create bitmap fonts from file
 
-        fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("font/EdgeFont.otf"));
-        fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-
-        font1 = fontGenerator.generateFont(fontParameter);
+        font1 = new BitmapFont(Gdx.files.internal("fonts/font1.fnt"));
 
     }
 
@@ -285,10 +274,6 @@ public class MainScreen extends ScreenAdapter {
         font1.dispose();
 
         // font Generators
-
-        fontGenerator.dispose();
-        fontParameter = null;
-
 
     }
 
