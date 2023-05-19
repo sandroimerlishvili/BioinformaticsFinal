@@ -1,5 +1,8 @@
 package com.bioinformatics.toolbox;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -14,8 +17,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -56,6 +62,7 @@ public class ProteinScreen extends ScreenAdapter {
 
     String dnaSequence;
     String proteinSequence = "";
+    StringSelection proteinSequenceSelection;
     int readingFrame = 1;
     boolean readingFrameChanged = false;
     String[][] codonChart = { { "aug", "M" },
@@ -79,7 +86,7 @@ public class ProteinScreen extends ScreenAdapter {
             { "cgu", "cgc", "cga", "cgg", "aga", "agg", "R" },
             { "ggu", "ggc", "gga", "ggg", "G" },
             { "uaa", "uag", "uga", "*" } };
-
+    private Clipboard clipboard;
     public ProteinScreen(MainClass parentClass, String dnaSequence) {
 
         // GameClass Setup
@@ -87,6 +94,8 @@ public class ProteinScreen extends ScreenAdapter {
         parent = parentClass;
 
         this.dnaSequence = dnaSequence;
+
+        clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
         // initialize backgrounds
 
@@ -121,7 +130,6 @@ public class ProteinScreen extends ScreenAdapter {
 
         font1 = new BitmapFont(Gdx.files.internal("fonts/font1.fnt"));
 
-        font1.getData().scale(0.1f);
         font1.getData().markupEnabled = true;
 
     }
@@ -142,7 +150,8 @@ public class ProteinScreen extends ScreenAdapter {
 
         if (readingFrameChanged) {
 
-            proteinLabel.setText(convertToProtein(dnaSequence, readingFrame));
+            proteinSequence = convertToProtein(dnaSequence, readingFrame);
+            proteinLabel.setText(proteinSequence);
 
         }
 
@@ -181,12 +190,12 @@ public class ProteinScreen extends ScreenAdapter {
     public void show() {
 
         camera = new OrthographicCamera();
-        viewport = new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
+        viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         stage = new Stage(viewport);
 
         createTable();
 
-        addLabel("Pick a reading frame:", 0, 25);
+        addLabel("Pick a reading frame:", 0, 10);
 
         addFrameTextButton("Frame 1", "laser").addListener(new ClickListener() {
             @Override
@@ -218,12 +227,21 @@ public class ProteinScreen extends ScreenAdapter {
             }
         });
 
-        proteinLabel = addProteinLabel(convertToProtein(dnaSequence, readingFrame), 125, 0);
+        proteinLabel = addProteinLabel(convertToProtein(dnaSequence, readingFrame), 140, 140);
         proteinLabel.setWrap(true);
 
         proteinLabel.setFontScale(0.5f);
 
-        addMainTextButton("Try Another Sequence", "warning", 100, 25).addListener(new ClickListener() {
+        addMainTextButton("Copy to clipboard", "fire", 1000, 25,0, 10).addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y)
+            {
+                proteinSequenceSelection = new StringSelection(proteinSequence.replaceAll("[\\[\\]]", "").replace("GREEN", "").replace("RED", ""));
+                clipboard.setContents(proteinSequenceSelection, proteinSequenceSelection);
+            }
+        });
+
+        addMainTextButton("Try Another Sequence", "warning", 1200, 100,10, 0).addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y)
             {
@@ -286,13 +304,13 @@ public class ProteinScreen extends ScreenAdapter {
 
     }
 
-    private ImageTextButton addMainTextButton(String name, String styleName, int padTop, int padBottom) {
+    private ImageTextButton addMainTextButton(String name, String styleName, int width, int height, int padTop, int padBottom) {
 
         ImageTextButton button = new ImageTextButton(name, skin, styleName);
 
         button.setColor(255f / 255f, 255f / 255f, 255f / 255f, 100);
 
-        mainTable.add(button).width(1200).height(100).padTop(padTop).padBottom(padBottom);
+        mainTable.add(button).width(width).height(height).padTop(padTop).padBottom(padBottom);
         mainTable.row();
         return button;
 
@@ -331,7 +349,15 @@ public class ProteinScreen extends ScreenAdapter {
 
         for (int i = 0; i < codons.size(); i++) {
 
+            boolean found = false;
+
             for (int j = 0; j < codonChart.length; j++) {
+
+                if (found) {
+
+                    continue;
+
+                }
 
                 for (int k = 0; k < codonChart[j].length - 1; k++) {
 
@@ -340,14 +366,17 @@ public class ProteinScreen extends ScreenAdapter {
                         if (codonChart[j][codonChart[j].length - 1].equals("M")) {
 
                             codons.set(i, "[GREEN]M[]");
+                            found = true;
 
                         } else if (codonChart[j][codonChart[j].length - 1].equals("*")) {
 
-                            codons.set(i, "[#FF1500]*[]");
+                            codons.set(i, "[RED]*[]");
+                            found = true;
 
                         } else {
 
                             codons.set(i, codonChart[j][codonChart[j].length - 1]);
+                            found = true;
 
                         }
 
@@ -362,8 +391,10 @@ public class ProteinScreen extends ScreenAdapter {
         System.out.println(codons.toString());
 
         proteinSequence = codons.toString().replaceAll("[,]", "").replace(" ", "");
-
         proteinSequence = proteinSequence.substring(1, proteinSequence.length() - 1);
+
+        //proteinSequenceSelection = new StringSelection(proteinSequence.replaceAll("[\\[\\]]", "").replace("GREEN", "").replace("RED", ""));
+        //clipboard.setContents(proteinSequenceSelection, proteinSequenceSelection);
 
         System.out.println("\nProtein: " + proteinSequence);
 

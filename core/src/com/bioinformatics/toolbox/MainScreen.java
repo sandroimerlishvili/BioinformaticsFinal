@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -77,7 +78,7 @@ public class MainScreen extends ScreenAdapter {
 
         parent.mainMusic = Assets.manager.get(Assets.mainMusic, Music.class);
 
-        parent.mainMusic.setVolume(1f);
+        parent.mainMusic.setVolume(5f);
         parent.mainMusic.setLooping(true);
         parent.mainMusic.play();
 
@@ -156,7 +157,7 @@ public class MainScreen extends ScreenAdapter {
     public void show() {
 
         camera = new OrthographicCamera();
-        viewport = new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
+        viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         stage = new Stage(viewport);
 
         createTable();
