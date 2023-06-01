@@ -37,6 +37,7 @@ public class ProteinScreen extends ScreenAdapter {
     private Skin skin;
     private Table mainTable;
     private Label proteinLabel;
+    private Label likelyLabel;
 
     //graphics
 
@@ -195,7 +196,7 @@ public class ProteinScreen extends ScreenAdapter {
 
         createTable();
 
-        addLabel("Pick a reading frame:", 0, 10);
+        addLabel("Pick a reading frame:", 0, 5);
 
         addFrameTextButton("Frame 1", "laser").addListener(new ClickListener() {
             @Override
@@ -227,21 +228,35 @@ public class ProteinScreen extends ScreenAdapter {
             }
         });
 
-        proteinLabel = addProteinLabel(convertToProtein(dnaSequence, readingFrame), 140, 140);
+        proteinLabel = addProteinLabel(convertToProtein(dnaSequence, readingFrame), 80, 60);
         proteinLabel.setWrap(true);
 
-        proteinLabel.setFontScale(0.5f);
+        if (dnaSequence.length() > 1050) {
 
-        addMainTextButton("Copy to clipboard", "fire", 1000, 25,0, 10).addListener(new ClickListener() {
+            proteinLabel.setFontScale(0.3f);
+
+        } else {
+
+            proteinLabel.setFontScale(0.5f);
+
+        }
+
+        String[] proteinSequences = {convertToProtein(dnaSequence, 1), convertToProtein(dnaSequence, 2), convertToProtein(dnaSequence, 3)};
+
+        likelyLabel = addLabel("Most Likely Reading Frame: " + pickBestReadingFrame(proteinSequences), 10, 10);
+
+
+        addMainTextButton("Copy to clipboard", "fire", 1000, 25,25, 0).addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y)
             {
+                parent.clickSound.play(0.7f);
                 proteinSequenceSelection = new StringSelection(proteinSequence.replaceAll("[\\[\\]]", "").replace("GREEN", "").replace("RED", ""));
                 clipboard.setContents(proteinSequenceSelection, proteinSequenceSelection);
             }
         });
 
-        addMainTextButton("Try Another Sequence", "warning", 1200, 100,10, 0).addListener(new ClickListener() {
+        addMainTextButton("Try Another Sequence", "warning", 1200, 100,25, 0).addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y)
             {
@@ -256,6 +271,73 @@ public class ProteinScreen extends ScreenAdapter {
 
 
         Gdx.input.setInputProcessor(stage);
+
+    }
+
+    private static int pickBestReadingFrame(String[] readingFrames) {
+
+        String longestReadingFrame = "";
+        int longestReadingFrameNumber = 0;
+
+        for (int i = 0; i < readingFrames.length; i++) {
+
+            String currentReadingFrame = longestSequenceInReadingFrame(readingFrames[i]);
+
+            if (currentReadingFrame.length() > longestReadingFrame.length()) {
+
+                longestReadingFrame = currentReadingFrame;
+                longestReadingFrameNumber = i + 1;
+
+            }
+
+        }
+
+        return longestReadingFrameNumber;
+
+    }
+
+    private static String longestSequenceInReadingFrame(String readingFrame) {
+
+        int startIndex = 0;
+        int endIndex = 0;
+        int currentLength = 0;
+        int longestLength = 0;
+
+        boolean counting = true;
+
+        for (int i = 0; i < readingFrame.length(); i++) {
+
+            char codon = readingFrame.charAt(i);
+
+            if (codon == '*') {
+
+                counting = false;
+
+                if (currentLength > longestLength) {
+
+                    longestLength = currentLength;
+                    startIndex = i-currentLength;
+                    endIndex = i;
+
+                }
+
+                currentLength = 0;
+
+            }
+
+            if (!counting && codon == 'M') counting = true;
+
+            if (counting) currentLength ++;
+
+            if (counting && i == readingFrame.length() - 1) {
+
+                startIndex = i-currentLength+1;
+                endIndex = i;
+
+            }
+        }
+
+        return readingFrame.substring(startIndex, endIndex+1);
 
     }
 
