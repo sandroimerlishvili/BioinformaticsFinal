@@ -245,7 +245,6 @@ public class ProteinScreen extends ScreenAdapter {
 
         likelyLabel = addLabel("Most Likely Reading Frame: " + pickBestReadingFrame(proteinSequences), 10, 10);
 
-
         addMainTextButton("Copy to clipboard", "fire", 1000, 25,25, 0).addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y)
@@ -349,8 +348,6 @@ public class ProteinScreen extends ScreenAdapter {
         stage.addActor(mainTable);
 
         mainTable.setPosition(0, 0);
-
-        //mainTable.setDebug(true);
 
     }
 
@@ -470,13 +467,8 @@ public class ProteinScreen extends ScreenAdapter {
 
         }
 
-        System.out.println(codons.toString());
-
         proteinSequence = codons.toString().replaceAll("[,]", "").replace(" ", "");
         proteinSequence = proteinSequence.substring(1, proteinSequence.length() - 1);
-
-        //proteinSequenceSelection = new StringSelection(proteinSequence.replaceAll("[\\[\\]]", "").replace("GREEN", "").replace("RED", ""));
-        //clipboard.setContents(proteinSequenceSelection, proteinSequenceSelection);
 
         System.out.println("\nProtein: " + proteinSequence);
 

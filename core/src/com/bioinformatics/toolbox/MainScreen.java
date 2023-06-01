@@ -209,8 +209,6 @@ public class MainScreen extends ScreenAdapter {
 
         stage.addActor(mainTable);
 
-        //mainTable.setPosition(0, 0);
-
     }
 
     private Label addLabel(String name) {
