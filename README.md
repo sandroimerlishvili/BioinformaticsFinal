@@ -4,6 +4,8 @@ This program was created by Sandro Imerlishvili as part of Dr. Andrew Colosanti'
 Bioinformatics course. With any inquiries please contact me via
 email at sandroimerlishvili2005@gmail.com
 
+Sequence analysis algorithm and certain graphical elements provided by Rafael Almeida and Deejuanae Lewis.
+
 ## Run Instructions:
 
 - Download and run executable file that can be retrieved from my google drive collection (can be found on my profile)
